@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="vi">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theo dõi Quản lý Học sinh</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap&amp;subset=vietnamese" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    h1, h2, h3, label, th {
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 
+                   -1px -1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    .app-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(15,23,42,0.3) transparent;
+    }
+    
+    .app-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .app-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .app-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(15,23,42,0.3);
+      border-radius: 9999px;
+    }
+    
+    .focus-ring:focus-visible {
+      outline: 2px solid #38bdf8;
+      outline-offset: 2px;
+    }
+
+    /* Simple modal layout for deletes */
+    .sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="w-full h-full m-0 p-0">
+  <div id="app-root" class="w-full h-full min-h-full bg-sky-50 flex flex-col text-slate-900">
+   <header class="w-full border-b border-yellow-500/30 bg-blue-900/90">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-1">
+     <h1 id="main-title" class="text-center font-bold tracking-wide text-yellow-400">PHẦN MỀM THEO DÕI QUẢN LÝ HỌC SINH</h1>
+     <h2 id="school-name" class="text-center text-sm font-semibold text-yellow-300 uppercase tracking-wide">TRƯỜNG TIỂU HỌC TIẾN THÀNH</h2>
+    </div>
+   </header>
+   <main class="flex-1 w-full overflow-auto">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-4">
+     <section class="w-full flex flex-col lg:flex-row gap-4">
+      <div class="flex-1 flex flex-col gap-4">
+       <section class="bg-blue-800 rounded-xl shadow-lg border border-yellow-500/30 p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+         <h3 id="student-block-title" class="text-sm font-bold text-yellow-400 tracking-wide uppercase">DANH SÁCH HỌC SINH</h3>
+         <div class="flex flex-wrap gap-2">
+           <button id="btn-update-names" aria-label="Cập nhật danh sách" class="focus-ring inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-sky-500 text-white hover:bg-sky-600 transition" type="button"> <span>📝</span> <span>Cập nhật danh sách</span> </button>
+           <button id="btn-clear-student" aria-label="Xóa học sinh đã chọn" class="focus-ring inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-500 text-white hover:bg-rose-600 transition" type="button"> <span>🗑</span> <span>Xóa học sinh đã chọn</span> </button>
+           <button id="btn-export" aria-label="Xuất CSV" class="focus-ring inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 transition" type="button">📤 Xuất CSV</button>
+           <button id="btn-import" aria-label="Nhập CSV" class="focus-ring inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition" type="button">📥 Nhập CSV</button>
+         </div>
+        </div>
+        <form id="name-form" class="flex flex-col gap-2" onsubmit="return false;">
+          <label for="name-input" class="text-xs font-semibold text-yellow-300"> Dán danh sách họ tên (mỗi dòng 1 học sinh) hoặc dán CSV (cột đầu là tên)</label>
+          <textarea id="name-input" aria-label="Danh sách tên học sinh" class="focus-ring w-full rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 text-xs px-3 py-2 resize-y min-h-[80px] placeholder-yellow-500/50" placeholder="Ví dụ:
+Nguyễn Văn A
+Trần Thị B
+Lê Minh C"></textarea>
+          <p class="text-xs text-yellow-200/80">Mẹo: Dán trực tiếp từ file Excel để cập nhật nhanh. Hoặc dán CSV (tên ở cột đầu).</p>
+        </form>
+       </section>
+       <section class="bg-blue-800 rounded-xl shadow-lg border border-yellow-500/30 p-3 flex flex-col">
+        <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+         <h3 class="text-sm font-bold text-yellow-400 uppercase tracking-wide">BẢNG THEO DÕI TUẦN</h3>
+         <div class="flex items-center gap-2 text-xs text-yellow-200"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100"> <span>●</span><span>Có</span> </span> <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-100"> <span>●</span><span>Vắng</span> </span>
+         </div>
+        </div>
+        <div class="border border-yellow-500/30 rounded-lg overflow-hidden bg-blue-900/60">
+         <div class="overflow-x-auto app-scroll">
+          <table class="min-w-full text-xs" role="table" aria-label="Bảng theo dõi tuần">
+           <thead class="bg-blue-700/90 text-yellow-400">
+            <tr>
+             <th class="px-2 py-2 text-center border-b border-yellow-500/30 w-10 font-bold">STT</th>
+             <th class="px-2 py-2 text-left border-b border-yellow-500/30 min-w-[140px] font-bold">Họ và tên</th>
+             <th class="px-2 py-2 text-center border-b border-yellow-500/30 w-20 font-bold">Điểm danh</th>
+             <th tabindex="0" class="px-2 py-2 text-center border-b border-yellow-500/30 cursor-pointer day-header font-bold" data-day="mon" role="button">Thứ 2</th>
+             <th tabindex="0" class="px-2 py-2 text-center border-b border-yellow-500/30 cursor-pointer day-header font-bold" data-day="tue" role="button">Thứ 3</th>
+             <th tabindex="0" class="px-2 py-2 text-center border-b border-yellow-500/30 cursor-pointer day-header font-bold" data-day="wed" role="button">Thứ 4</th>
+             <th tabindex="0" class="px-2 py-2 text-center border-b border-yellow-500/30 cursor-pointer day-header font-bold" data-day="thu" role="button">Thứ 5</th>
+             <th tabindex="0" class="px-2 py-2 text-center border-b border-yellow-500/30 cursor-pointer day-header font-bold" data-day="fri" role="button">Thứ 6</th>
+             <th class="px-2 py-2 text-center border-b border-yellow-500/30 w-24 font-bold">Tổng tuần</th>
+            </tr>
+           </thead>
+           <tbody id="student-table-body" class="bg-blue-800/70"></tbody>
+          </table>
+         </div>
+        </div>
+        <p id="no-student-hint" class="mt-2 text-xs text-yellow-200/80">Chưa có học sinh. Hãy dán danh sách tên bên trên và nhấn "Cập nhật danh sách"</p>
+       </section>
+      </div>
+      <aside class="w-full lg:w-80 flex flex-col gap-4">
+       <section class="bg-blue-800 rounded-xl shadow-lg border border-yellow-500/30 p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+         <div class="flex-1 min-w-[100px]">
+          <p class="text-xs font-semibold text-yellow-300 uppercase tracking-wide mb-1">Tuần</p><select id="week-select" aria-label="Chọn tuần" class="focus-ring w-full rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 text-xs px-2 py-1.5"> </select>
+         </div>
+         <div class="flex-1 min-w-[100px]"><label for="class-input" class="text-xs font-semibold text-yellow-300 block mb-1">Lớp</label> <input id="class-input" aria-label="Tên lớp" class="focus-ring w-full rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 text-xs px-2 py-1.5 placeholder-yellow-500/50" type="text" placeholder="VD: 3A">
+         </div>
+        </div>
+        <div class="flex flex-col gap-1"><label for="gvcn-input" class="text-xs font-semibold text-yellow-300">GVCN</label> <input id="gvcn-input" aria-label="Giáo viên chủ nhiệm" class="focus-ring rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 text-xs px-2 py-1.5 placeholder-yellow-500/50" type="text" placeholder="VD: Nguyễn Thị A">
+        </div><button id="btn-save-all" aria-label="Lưu và cập nhật" class="focus-ring inline-flex items-center justify-center gap-1 px-3 py-2 rounded-full text-xs font-semibold bg-sky-600 text-white hover:bg-sky-700 transition w-full disabled:opacity-60 disabled:cursor-not-allowed" type="button"> <span>💾</span> <span>Lưu và cập nhật</span> </button>
+        <p id="save-message" class="text-xs text-center min-h-[16px]"></p>
+        <div class="flex flex-col gap-2"><label for="search-input" class="text-xs font-semibold text-yellow-300">Tìm kiếm nhanh học sinh</label>
+         <div class="flex gap-2">
+          <div class="relative flex-1"><span class="absolute inset-y-0 left-0 pl-2 flex items-center text-yellow-400 text-xs">🔍</span> <input id="search-input" aria-label="Tìm kiếm học sinh" class="focus-ring w-full rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 text-xs pl-7 pr-2 py-1.5 placeholder-yellow-500/50" type="text" placeholder="Nhập tên để lọc nhanh...">
+          </div><button id="btn-search" aria-label="Tìm học sinh" class="focus-ring px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 transition" type="button"> Tìm </button>
+         </div>
+        </div>
+       </section>
+       <section class="bg-blue-800 rounded-xl shadow-lg border border-yellow-500/30 p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+         <h3 id="daily-feedback-title" class="text-sm font-bold text-yellow-400 uppercase tracking-wide">NỘI DUNG TRAO ĐỔI</h3>
+         <div class="text-xs text-yellow-200"><span id="current-day-label">Thứ 2</span> · <span id="current-student-label">Chưa chọn</span>
+         </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+         <div class="rounded-lg border border-emerald-100 bg-emerald-50/70 px-2 py-1.5">
+          <p class="font-semibold text-emerald-700">Điểm ngày</p>
+          <p id="daily-score" class="mt-0.5 text-base font-bold text-emerald-800">0</p>
+          <p id="daily-status" class="mt-0.5 text-xs text-emerald-700">Cần nhắc nhở</p>
+         </div>
+         <div class="rounded-lg border border-indigo-100 bg-indigo-50/70 px-2 py-1.5">
+          <p class="font-semibold text-indigo-700">Điểm tuần</p>
+          <p id="weekly-score" class="mt-0.5 text-base font-bold text-indigo-800">0</p>
+          <p id="weekly-status" class="mt-0.5 text-xs text-indigo-700">Nhắc nhở tuần</p>
+         </div>
+        </div>
+        <div class="flex flex-col gap-2 text-xs">
+         <div><label for="praise-day" class="font-semibold text-yellow-300 block mb-1">Nội dung khen/ngày</label> <textarea id="praise-day" aria-label="Nội dung khen ngày" class="focus-ring w-full rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 px-2 py-1.5 resize-y min-h-[40px] text-xs placeholder-yellow-500/50" placeholder="Ví dụ: Học sinh tích cực phát biểu..."></textarea>
+         </div>
+         <div><label for="remind-day" class="font-semibold text-yellow-300 block mb-1">Nội dung nhắc nhở/ngày</label> <textarea id="remind-day" aria-label="Nội dung nhắc nhở ngày" class="focus-ring w-full rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 px-2 py-1.5 resize-y min-h-[40px] text-xs placeholder-yellow-500/50" placeholder="Ví dụ: Cần chú ý nghe giảng..."></textarea>
+         </div>
+         <div><label for="general-comment" class="font-semibold text-yellow-300 block mb-1">Nhận xét chung</label> <textarea id="general-comment" aria-label="Nhận xét chung" class="focus-ring w-full rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 px-2 py-1.5 resize-y min-h-[40px] text-xs placeholder-yellow-500/50" placeholder="Nhận xét tổng hợp..."></textarea>
+         </div>
+         <div><label for="parent-message" class="font-semibold text-yellow-300 block mb-1">Nội dung gửi phụ huynh</label> <textarea id="parent-message" aria-label="Nội dung gửi phụ huynh" class="focus-ring w-full rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 px-2 py-1.5 resize-y min-h-[60px] text-xs placeholder-yellow-500/50" placeholder="Tự động gợi ý từ tổng điểm..."></textarea>
+         </div>
+        </div>
+        <button id="btn-send" aria-label="Copy nội dung gửi phụ huynh" class="focus-ring mt-1 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition w-full" type="button"> <span>📨</span> <span id="send-button-text">Copy nội dung</span> </button>
+        <button id="btn-send-line" aria-label="Gửi Line cho phụ huynh" class="focus-ring inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-green-500 text-white hover:bg-green-600 transition w-full" type="button"> <span>💬</span> <span>Gửi Line cho phụ huynh</span> </button>
+        <div id="send-preview" class="hidden mt-1 text-xs rounded-lg border border-emerald-100 bg-emerald-50/70 px-2 py-1.5 text-emerald-800 whitespace-pre-wrap" aria-live="polite"></div>
+       </section>
+      </aside>
+     </section>
+    </div>
+   </main>
+
+   <!-- Reason modal (existing) -->
+   <div id="reason-modal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-20 hidden" role="dialog" aria-modal="true" aria-labelledby="reason-modal-title">
+    <div class="bg-blue-800 rounded-xl shadow-2xl border-2 border-yellow-500/50 w-full max-w-md mx-4 p-4 flex flex-col gap-3">
+     <div class="flex items-center justify-between">
+      <h3 id="reason-modal-title" class="text-sm font-bold text-yellow-400">Lý do cộng điểm</h3><button id="reason-modal-close" aria-label="Đóng" class="focus-ring text-yellow-400 hover:text-yellow-300 text-2xl leading-none font-bold">×</button>
+     </div>
+     <div class="flex flex-col gap-2">
+      <p class="text-xs text-yellow-200">Chọn một lý do để áp dụng</p>
+      <div id="reason-list" class="flex flex-col gap-1 max-h-40 overflow-y-auto app-scroll" tabindex="0"></div>
+     </div>
+     <div class="border-t border-yellow-500/30 pt-2 flex flex-col gap-2">
+      <div class="flex items-center gap-2"><input id="reason-input" aria-label="Nội dung lý do" class="focus-ring flex-1 rounded-lg border border-yellow-500/30 bg-blue-900/60 text-yellow-100 text-xs px-2 py-1.5 placeholder-yellow-500/50" type="text" placeholder="Nhập lý do mới..."> <button id="btn-reason-save" aria-label="Lưu lý do" class="focus-ring px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500 text-white hover:bg-amber-600 transition" type="button">Lưu</button>
+      </div>
+      <div class="flex items-center justify-between text-xs text-yellow-200"><span id="reason-mode-label">Thêm mới lý do</span> <button id="btn-reason-delete" aria-label="Xóa lý do" class="focus-ring px-2 py-1 rounded-full text-xs font-medium bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled type="button">Xóa lý do</button>
+      </div>
+     </div>
+    </div>
+   </div>
+
+   <!-- Delete confirmation modal (new) -->
+   <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-25 hidden" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <div class="bg-blue-800 rounded-xl shadow-2xl border-2 border-yellow-500/50 w-full max-w-md mx-4 p-4 flex flex-col gap-3">
+      <div class="flex items-center justify-between">
+        <h3 id="delete-modal-title" class="text-sm font-bold text-yellow-400">Xác nhận xóa học sinh</h3>
+        <button id="delete-modal-close" aria-label="Đóng" class="focus-ring text-yellow-400 hover:text-yellow-300 text-2xl leading-none font-bold">×</button>
+      </div>
+      <div>
+        <p id="delete-modal-message" class="text-xs text-yellow-200">Bạn có chắc muốn xóa học sinh này?</p>
+      </div>
+      <div class="flex gap-2 justify-end">
+        <button id="delete-confirm-btn" class="focus-ring px-3 py-1.5 rounded-full text-xs font-medium bg-rose-600 text-white hover:bg-rose-700" type="button">Xóa</button>
+        <button id="delete-cancel-btn" class="focus-ring px-3 py-1.5 rounded-full text-xs font-medium bg-slate-600 text-white hover:bg-slate-500" type="button">Hủy</button>
+      </div>
+    </div>
+   </div>
+
+   <!-- Toast (no innerHTML injection) -->
+   <div id="toast" class="fixed bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-900 text-white shadow-lg hidden z-30" role="status" aria-live="polite"></div>
+  </div>
+
+  <script>
+  /****************************************************************
+   * App JS - refactored, accessibility, localStorage, export/import
+   ****************************************************************/
+
+  // Configuration & defaults
+  const STORAGE_KEY = 'student_app_v1';
+  const defaultConfig = {
+    main_title: "PHẦN MỀM THEO DÕI QUẢN LÝ HỌC SINH",
+    school_name: "TRƯỜNG TIỂU HỌC TIẾN THÀNH",
+    student_block_title: "DANH SÁCH HỌC SINH",
+    reason_plus_title: "Lý do cộng điểm",
+    reason_minus_title: "Lý do trừ điểm",
+    daily_feedback_title: "Nội dung trao đổi",
+    send_button_text: "Copy nội dung",
+    background_color: "#1e3a8a",
+    surface_color: "#1e40af",
+    text_color: "#fbbf24",
+    primary_action_color: "#f59e0b",
+    secondary_action_color: "#10b981",
+    font_family: "Inter",
+    font_size: 13
+  };
+
+  // State
+  let currentDay = "mon";
+  let students = [];
+  let filteredStudents = [];
+  let selectedStudentId = null;
+  let dataInitialized = false;
+  let currentRecordCount = 0;
+  let plusReasons = [
+    "Chăm ngoan, lễ phép",
+    "Hoàn thành bài tập",
+    "Tích cực phát biểu",
+    "Giúp đỡ bạn bè",
+    "Giữ vệ sinh lớp học"
+  ];
+  let minusReasons = [
+    "Chưa hoàn thành bài",
+    "Mất trật tự trong giờ",
+    "Quên đồ dùng học tập",
+    "Đi học muộn",
+    "Chưa tập trung nghe giảng"
+  ];
+  let reasonType = "plus";
+  let selectedReasonIndex = null;
+  let currentReasonStudentId = null;
+  let currentReasonDay = null;
+  let lastDeleted = null; // For undo
+  let saveLocalDebounceTimer = null;
+
+  // Helpers
+  const $ = (id) => document.getElementById(id);
+
+  function safeText(text) {
+    const d = document.createTextNode(text || '');
+    const span = document.createElement('span');
+    span.appendChild(d);
+    return span;
+  }
+
+  // Toast implementation without innerHTML injection.
+  function showToast(message, options = {}) {
+    // options: actionText, onAction (function), duration(ms)
+    const toast = $('toast');
+    toast.innerHTML = ''; // clear previous nodes safely
+    const msgSpan = document.createElement('span');
+    msgSpan.className = 'mr-2';
+    msgSpan.appendChild(document.createTextNode(message));
+    toast.appendChild(msgSpan);
+
+    if (options.actionText && typeof options.onAction === 'function') {
+      const actionBtn = document.createElement('button');
+      actionBtn.type = 'button';
+      actionBtn.className = 'ml-2 px-2 py-0.5 rounded bg-yellow-500 text-black text-xs font-semibold';
+      actionBtn.appendChild(document.createTextNode(options.actionText));
+      actionBtn.addEventListener('click', () => {
+        options.onAction();
+        toast.classList.add('hidden');
+      });
+      toast.appendChild(actionBtn);
+    }
+
+    toast.classList.remove('hidden');
+
+    const duration = options.duration || 3000;
+    setTimeout(() => {
+      toast.classList.add('hidden');
+    }, duration);
+  }
+
+  // Week select
+  function initWeekSelect() {
+    const sel = $("week-select");
+    sel.innerHTML = "";
+    for (let i = 1; i <= 35; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = "Tuần " + i;
+      sel.appendChild(opt);
+    }
+  }
+
+  function computeDailyScore(student, dayKey) {
+    return student.scores?.[dayKey] || 0;
+  }
+
+  function computeWeeklyScore(student) {
+    const days = ["mon", "tue", "wed", "thu", "fri"];
+    return days.reduce((sum, d) => sum + computeDailyScore(student, d), 0);
+  }
+
+  function getDayLabel(key) {
+    const labels = {mon: "Thứ 2", tue: "Thứ 3", wed: "Thứ 4", thu: "Thứ 5", fri: "Thứ 6"};
+    return labels[key] || "";
+  }
+
+  function refreshCurrentStudentLabels() {
+    const label = $("current-student-label");
+    const s = students.find(st => st.id === selectedStudentId);
+    label.textContent = s ? s.name : "Chưa chọn";
+    $("current-day-label").textContent = getDayLabel(currentDay);
+  }
+
+  function updateDailyStatusBox() {
+    const s = students.find(st => st.id === selectedStudentId);
+    const dailyScoreEl = $("daily-score");
+    const dailyStatusEl = $("daily-status");
+    const weeklyScoreEl = $("weekly-score");
+    const weeklyStatusEl = $("weekly-status");
+
+    if (!s) {
+      dailyScoreEl.textContent = "0";
+      dailyStatusEl.textContent = "Cần nhắc nhở";
+      weeklyScoreEl.textContent = "0";
+      weeklyStatusEl.textContent = "Nhắc nhở tuần";
+      return;
+    }
+    
+    const dayScore = computeDailyScore(s, currentDay);
+    const weekScore = computeWeeklyScore(s);
+
+    dailyScoreEl.textContent = dayScore;
+    dailyStatusEl.textContent = dayScore >= 1 ? "Khen học sinh" : "Cần nhắc nhở";
+    weeklyScoreEl.textContent = weekScore;
+    weeklyStatusEl.textContent = weekScore >= 5 ? "Khen tuần" : "Nhắc nhở tuần";
+
+    autoGenerateFeedback();
+  }
+
+  // Auto-generate feedback texts
+  function autoGenerateFeedback() {
+    const s = students.find(st => st.id === selectedStudentId);
+    if (!s) return;
+
+    const dayScore = computeDailyScore(s, currentDay);
+    const weekScore = computeWeeklyScore(s);
+    const reasons = s.reasons?.[currentDay] || {plus: [], minus: []};
+
+    const praiseEl = $("praise-day");
+    if (reasons.plus.length > 0) {
+      praiseEl.value = "Hôm nay em " + s.name + " đã: " + reasons.plus.join(", ") + ". Cô rất vui và khen ngợi em!";
+    } else if (dayScore >= 1) {
+      praiseEl.value = "Hôm nay em " + s.name + " có nhiều cố gắng và tiến bộ. Cô khen ngợi em!";
+    } else {
+      praiseEl.value = "";
+    }
+
+    const remindEl = $("remind-day");
+    if (reasons.minus.length > 0) {
+      remindEl.value = "Hôm nay em " + s.name + " cần cải thiện: " + reasons.minus.join(", ") + ". Cô mong em cố gắng hơn!";
+    } else if (dayScore < 1) {
+      remindEl.value = "Hôm nay em " + s.name + " cần chú ý nghe giảng và chuẩn bị bài kỹ hơn.";
+    } else {
+      remindEl.value = "";
+    }
+
+    const generalEl = $("general-comment");
+    const allDays = ["mon", "tue", "wed", "thu", "fri"];
+    const allPlusReasons = [];
+    const allMinusReasons = [];
+    allDays.forEach(d => {
+      const r = s.reasons?.[d] || {plus: [], minus: []};
+      allPlusReasons.push(...r.plus);
+      allMinusReasons.push(...r.minus);
+    });
+
+    if (weekScore >= 5) {
+      const uniquePlus = [...new Set(allPlusReasons)];
+      if (uniquePlus.length > 0) {
+        generalEl.value = "Tuần này em " + s.name + " thể hiện tốt: " + uniquePlus.slice(0, 3).join(", ") + ". Cô rất hài lòng!";
+      } else {
+        generalEl.value = "Tuần này em " + s.name + " học tập tốt, có ý thức và thái độ tích cực. Cô khen ngợi em!";
+      }
+    } else {
+      const uniqueMinus = [...new Set(allMinusReasons)];
+      if (uniqueMinus.length > 0) {
+        generalEl.value = "Tuần này em " + s.name + " cần cải thiện: " + uniqueMinus.slice(0, 3).join(", ") + ". Cô mong em cố gắng hơn!";
+      } else {
+        generalEl.value = "Tuần này em " + s.name + " cần chú ý hơn trong học tập. Cô tin em sẽ cố gắng hơn!";
+      }
+    }
+
+    const pmEl = $("parent-message");
+    if (dayScore >= 1) {
+      if (reasons.plus.length > 0) {
+        pmEl.value = "Kính gửi phụ huynh,\n\nHôm nay em " + s.name + " đã: " + reasons.plus.join(", ") + ".\n\nCô rất vui và khen ngợi em. Mong phụ huynh tiếp tục động viên con ạ!";
+      } else {
+        pmEl.value = "Kính gửi phụ huynh,\n\nHôm nay em " + s.name + " có nhiều cố gắng và tiến bộ. Cô khen ngợi em. Mong phụ huynh tiếp tục động viên con!";
+      }
+    } else {
+      if (reasons.minus.length > 0) {
+        pmEl.value = "Kính gửi phụ huynh,\n\nHôm nay em " + s.name + " cần cải thiện: " + reasons.minus.join(", ") + ".\n\nMong phụ huynh phối hợp nhắc nhở con cố gắng hơn ạ!";
+      } else {
+        pmEl.value = "Kính gửi phụ huynh,\n\nHôm nay em " + s.name + " cần chú ý hơn trong học tập. Mong phụ huynh phối hợp nhắc nhở con ạ!";
+      }
+    }
+  }
+
+  // Render table with DocumentFragment for better performance
+  function renderStudentTable() {
+    const tbody = $("student-table-body");
+    const hint = $("no-student-hint");
+    tbody.innerHTML = "";
+
+    const list = filteredStudents.length ? filteredStudents : students;
+
+    if (!list.length) {
+      hint.classList.remove("hidden");
+      return;
+    }
+    hint.classList.add("hidden");
+
+    const frag = document.createDocumentFragment();
+
+    list.forEach((s, idx) => {
+      const tr = document.createElement("tr");
+      tr.className = "hover:bg-sky-50 cursor-pointer";
+      tr.dataset.id = s.id;
+      tr.setAttribute('role', 'row');
+      tr.tabIndex = 0;
+
+      if (s.id === selectedStudentId) {
+        tr.classList.add("bg-sky-50");
+      }
+
+      const tdIdx = document.createElement("td");
+      tdIdx.className = "px-2 py-1.5 text-center border-b border-yellow-500/20 text-white";
+      tdIdx.textContent = idx + 1;
+      tr.appendChild(tdIdx);
+
+      const tdName = document.createElement("td");
+      tdName.className = "px-2 py-1.5 text-left border-b border-yellow-500/20";
+      const nameContainer = document.createElement("div");
+      nameContainer.className = "flex items-center gap-2";
+      
+      const avatar = document.createElement("div");
+      avatar.className = "w-7 h-7 rounded-full flex items-center justify-center text-white font-semibold text-xs flex-shrink-0";
+      const colors = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#06b6d4"];
+      avatar.style.backgroundColor = colors[idx % colors.length];
+      avatar.textContent = (s.name || '').charAt(0).toUpperCase();
+      
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = s.name;
+      nameSpan.className = "truncate text-white font-medium";
+      
+      nameContainer.appendChild(avatar);
+      nameContainer.appendChild(nameSpan);
+      tdName.appendChild(nameContainer);
+      tr.appendChild(tdName);
+
+      const tdAtt = document.createElement("td");
+      tdAtt.className = "px-2 py-1.5 text-center border-b border-yellow-500/20";
+      const present = s.attendance?.[currentDay] !== false;
+      const spanAtt = document.createElement("button");
+      spanAtt.className = "cursor-pointer inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium " +
+        (present ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-rose-50 text-rose-700 border border-rose-100");
+      spanAtt.textContent = present ? "Có" : "Vắng";
+      spanAtt.type = "button";
+      spanAtt.setAttribute('aria-label', present ? 'Đã điểm danh: Có' : 'Đã điểm danh: Vắng');
+      spanAtt.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        s.attendance = s.attendance || {};
+        s.attendance[currentDay] = !present;
+        saveLocalStateDebounced();
+        renderStudentTable();
+        updateDailyStatusBox();
+      });
+      tdAtt.appendChild(spanAtt);
+      tr.appendChild(tdAtt);
+
+      ["mon", "tue", "wed", "thu", "fri"].forEach((dKey) => {
+        const td = document.createElement("td");
+        td.className = "px-1 py-1.5 text-center border-b border-yellow-500/20 min-w-[84px]";
+
+        const inner = document.createElement("div");
+        inner.className = "inline-flex items-center justify-center gap-1 px-1 py-0.5 rounded-full bg-blue-900/60 border border-yellow-500/30";
+        
+        const btnPlus = document.createElement("button");
+        btnPlus.type = "button";
+        btnPlus.className = "focus-ring text-xs text-emerald-600 hover:text-emerald-700 font-bold";
+        btnPlus.textContent = "+";
+        btnPlus.title = "Cộng điểm";
+        btnPlus.setAttribute('aria-label', `Cộng điểm ${getDayLabel(dKey)}`);
+        btnPlus.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          openReasonModal("plus", s.id, dKey);
+        });
+
+        const btnMinus = document.createElement("button");
+        btnMinus.type = "button";
+        btnMinus.className = "focus-ring text-xs text-rose-500 hover:text-rose-600 font-bold";
+        btnMinus.textContent = "−";
+        btnMinus.title = "Trừ điểm";
+        btnMinus.setAttribute('aria-label', `Trừ điểm ${getDayLabel(dKey)}`);
+        btnMinus.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          openReasonModal("minus", s.id, dKey);
+        });
+
+        const scoreSpan = document.createElement("span");
+        scoreSpan.className = "text-xs font-bold text-yellow-400 bg-blue-700/80 px-1 rounded min-w-[20px] inline-block";
+        scoreSpan.textContent = computeDailyScore(s, dKey);
+
+        inner.appendChild(btnPlus);
+        inner.appendChild(btnMinus);
+        inner.appendChild(scoreSpan);
+        td.appendChild(inner);
+        tr.appendChild(td);
+      });
+
+      const tdWeek = document.createElement("td");
+      tdWeek.className = "px-2 py-1.5 text-center border-b border-yellow-500/20";
+      const weekScore = computeWeeklyScore(s);
+      const spanWeek = document.createElement("span");
+      spanWeek.className = "inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-semibold border " +
+        (weekScore >= 5 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100");
+      spanWeek.textContent = weekScore;
+      tdWeek.appendChild(spanWeek);
+      tr.appendChild(tdWeek);
+
+      tr.addEventListener("click", () => {
+        selectedStudentId = s.id;
+        refreshCurrentStudentLabels();
+        updateDailyStatusBox();
+        renderStudentTable();
+      });
+
+      // keyboard accessibility for row selection
+      tr.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectedStudentId = s.id;
+          refreshCurrentStudentLabels();
+          updateDailyStatusBox();
+          renderStudentTable();
+        }
+      });
+
+      frag.appendChild(tr);
+    });
+
+    tbody.appendChild(frag);
+  }
+
+  // Reason modal / apply reason logic
+  function openReasonModal(type, studentId, dayKey) {
+    reasonType = type;
+    currentReasonStudentId = studentId;
+    currentReasonDay = dayKey;
+    selectedReasonIndex = null;
+    $("reason-input").value = "";
+    $("reason-mode-label").textContent = "Thêm mới lý do";
+    $("btn-reason-delete").disabled = true;
+
+    $("reason-modal-title").textContent = type === "plus" ? (window.elementSdk?.config?.reason_plus_title || defaultConfig.reason_plus_title) : (window.elementSdk?.config?.reason_minus_title || defaultConfig.reason_minus_title);
+
+    const listEl = $("reason-list");
+    listEl.innerHTML = "";
+    const arr = type === "plus" ? plusReasons : minusReasons;
+    
+    arr.forEach((rsn, idx) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "focus-ring text-left w-full px-2 py-1 rounded-md text-xs border border-sky-100 bg-sky-50/60 hover:bg-sky-100";
+      btn.textContent = rsn;
+      btn.setAttribute('aria-label', `Áp dụng lý do: ${rsn}`);
+      btn.addEventListener("click", () => {
+        applyReasonToStudent(type, idx, studentId, dayKey);
+      });
+      
+      btn.addEventListener("contextmenu", (ev) => {
+        ev.preventDefault();
+        selectedReasonIndex = idx;
+        $("reason-input").value = rsn;
+        $("reason-mode-label").textContent = "Đang sửa lý do";
+        $("btn-reason-delete").disabled = false;
+      });
+      
+      listEl.appendChild(btn);
+    });
+
+    $("reason-modal").classList.remove("hidden");
+    // focus
+    listEl.focus();
+  }
+
+  // Apply reason and clamp score >= 0
+  function applyReasonToStudent(type, idx, studentId, dayKey) {
+    const s = students.find(st => st.id === studentId);
+    if (!s) return;
+    
+    s.scores = s.scores || {};
+    const delta = type === "plus" ? 1 : -1;
+    const newVal = (s.scores[dayKey] || 0) + delta;
+    // clamp to >= 0
+    s.scores[dayKey] = Math.max(0, newVal);
+
+    s.reasons = s.reasons || {};
+    s.reasons[dayKey] = s.reasons[dayKey] || {plus: [], minus: []};
+    const arr = type === "plus" ? plusReasons : minusReasons;
+    const reason = arr[idx];
+    
+    if (type === "plus") {
+      if (!s.reasons[dayKey].plus.includes(reason)) {
+        s.reasons[dayKey].plus.push(reason);
+      }
+    } else {
+      if (!s.reasons[dayKey].minus.includes(reason)) {
+        s.reasons[dayKey].minus.push(reason);
+      }
+    }
+
+    saveLocalStateDebounced();
+    showToast((type === "plus" ? "Đã cộng 1 điểm" : "Đã trừ 1 điểm") + " cho " + getDayLabel(dayKey));
+    renderStudentTable();
+    
+    if (studentId === selectedStudentId && dayKey === currentDay) {
+      updateDailyStatusBox();
+    }
+    
+    $("reason-modal").classList.add("hidden");
+  }
+
+  // Reason modal controls
+  $("reason-modal-close").onclick = () => { $("reason-modal").classList.add("hidden"); };
+  $("reason-modal").onclick = (ev) => { if (ev.target === $("reason-modal")) $("reason-modal").classList.add("hidden"); };
+
+  $("btn-reason-save").onclick = () => {
+    const val = $("reason-input").value.trim();
+    if (!val) {
+      showToast("Vui lòng nhập nội dung lý do");
+      return;
+    }
+    
+    const arrLocal = reasonType === "plus" ? plusReasons : minusReasons;
+    
+    if (selectedReasonIndex === null) {
+      arrLocal.push(val);
+      showToast("Đã thêm lý do mới");
+    } else {
+      arrLocal[selectedReasonIndex] = val;
+      showToast("Đã cập nhật lý do");
+    }
+    
+    if (reasonType === "plus") plusReasons = arrLocal;
+    else minusReasons = arrLocal;
+
+    saveLocalStateDebounced();
+    
+    openReasonModal(reasonType, currentReasonStudentId, currentReasonDay);
+  };
+
+  $("btn-reason-delete").onclick = () => {
+    if (selectedReasonIndex === null) return;
+    
+    const arrLocal = reasonType === "plus" ? plusReasons : minusReasons;
+    arrLocal.splice(selectedReasonIndex, 1);
+    
+    if (reasonType === "plus") plusReasons = arrLocal;
+    else minusReasons = arrLocal;
+    
+    showToast("Đã xóa lý do");
+    saveLocalStateDebounced();
+    openReasonModal(reasonType, currentReasonStudentId, currentReasonDay);
+  };
+
+  // Update names from textarea (or CSV)
+  function handleUpdateNames() {
+    const raw = $("name-input").value;
+    let lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    
+    if (!lines.length) {
+      showToast("Vui lòng nhập danh sách tên trước");
+      return;
+    }
+
+    // If CSV-like (contains commas), take first column as name
+    if (lines.some(l => l.includes(','))) {
+      lines = lines.map(l => {
+        const first = l.split(',')[0].trim().replace(/^"|"$/g, '');
+        return first;
+      }).filter(Boolean);
+    }
+    
+    const baseTime = Date.now();
+    students = lines.map((name, idx) => ({
+      id: "s" + baseTime + "_" + idx,
+      name,
+      attendance: {mon: true, tue: true, wed: true, thu: true, fri: true},
+      scores: {mon: 0, tue: 0, wed: 0, thu: 0, fri: 0},
+      reasons: {}
+    }));
+    
+    filteredStudents = [];
+    selectedStudentId = students[0]?.id || null;
+    refreshCurrentStudentLabels();
+    updateDailyStatusBox();
+    renderStudentTable();
+    saveLocalState();
+    showToast("Đã cập nhật danh sách học sinh");
+  }
+
+  // Delete flow: open modal instead of toast; supports undo
+  function handleClearStudent() {
+    if (!selectedStudentId) {
+      showToast("Vui lòng chọn học sinh cần xóa trước");
+      return;
+    }
+    const s = students.find(st => st.id === selectedStudentId);
+    if (!s) return;
+
+    $("delete-modal-message").textContent = `Xóa học sinh "${s.name}"?`;
+    $("delete-modal").classList.remove("hidden");
+    $("delete-confirm-btn").focus();
+  }
+
+  $("delete-modal-close").onclick = closeDeleteModal;
+  $("delete-cancel-btn").onclick = closeDeleteModal;
+  function closeDeleteModal() {
+    $("delete-modal").classList.add("hidden");
+  }
+
+  $("delete-confirm-btn").onclick = () => {
+    const s = students.find(st => st.id === selectedStudentId);
+    if (!s) {
+      closeDeleteModal();
+      return;
+    }
+    // remove and keep backup for undo
+    const index = students.findIndex(st => st.id === selectedStudentId);
+    lastDeleted = {student: JSON.parse(JSON.stringify(s)), index};
+    students.splice(index, 1);
+    filteredStudents = filteredStudents.filter(st => st.id !== selectedStudentId);
+    selectedStudentId = students[0]?.id || null;
+    renderStudentTable();
+    refreshCurrentStudentLabels();
+    updateDailyStatusBox();
+    saveLocalState();
+
+    closeDeleteModal();
+
+    // Show toast with undo
+    showToast(`Đã xóa ${lastDeleted.student.name}`, {
+      actionText: 'Hoàn tác',
+      onAction: () => {
+        if (lastDeleted) {
+          students.splice(lastDeleted.index, 0, lastDeleted.student);
+          saveLocalState();
+          renderStudentTable();
+          showToast('Đã hoàn tác xóa');
+          lastDeleted = null;
+        }
+      },
+      duration: 5000
+    });
+
+    // If not undone in 6s, clear lastDeleted
+    setTimeout(() => { lastDeleted = null; }, 6000);
+  };
+
+  // Search/filter
+  function handleSearch() {
+    const q = $("search-input").value.trim().toLowerCase();
+    filteredStudents = q ? students.filter(s => s.name.toLowerCase().includes(q)) : [];
+    renderStudentTable();
+  }
+
+  // Export CSV
+  function exportCSV() {
+    if (!students.length) {
+      showToast("Không có dữ liệu để xuất");
+      return;
+    }
+    const header = [
+      'student_id','student_name','week','class_name','teacher_name',
+      'present_mon','present_tue','present_wed','present_thu','present_fri',
+      'score_mon','score_tue','score_wed','score_thu','score_fri'
+    ];
+    const week = $('week-select').value || 1;
+    const className = $('class-input').value || '';
+    const teacherName = $('gvcn-input').value || '';
+
+    const rows = students.map(s => {
+      return [
+        s.id,
+        `"${s.name.replace(/"/g, '""')}"`,
+        week,
+        `"${className.replace(/"/g, '""')}"`,
+        `"${teacherName.replace(/"/g, '""')}"`,
+        s.attendance?.mon !== false,
+        s.attendance?.tue !== false,
+        s.attendance?.wed !== false,
+        s.attendance?.thu !== false,
+        s.attendance?.fri !== false,
+        s.scores?.mon || 0,
+        s.scores?.tue || 0,
+        s.scores?.wed || 0,
+        s.scores?.thu || 0,
+        s.scores?.fri || 0
+      ].join(',');
+    });
+
+    const csv = [header.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `students_export_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Đã xuất CSV');
+  }
+
+  // Import CSV (simple): reads textarea (name-input); if CSV, uses first column
+  function importFromTextarea() {
+    const raw = $('name-input').value.trim();
+    if (!raw) {
+      showToast('Vui lòng dán dữ liệu vào ô nhập trước khi nhập');
+      return;
+    }
+    // Reuse update names logic (handles CSV first column)
+    handleUpdateNames();
+  }
+
+  // Save all data (uses dataSdk when available; otherwise localStorage)
+  async function saveAllData() {
+    if (!window.dataSdk || !dataInitialized) {
+      showToast("Dữ liệu đang khởi tạo hoặc dataSdk không có, dữ liệu sẽ được lưu cục bộ");
+      // Still persist locally
+      saveLocalState();
+      return;
+    }
+    
+    if (!students.length) {
+      showToast("Không có dữ liệu học sinh để lưu");
+      return;
+    }
+    
+    const saveBtn = $("btn-save-all");
+    const msg = $("save-message");
+    saveBtn.disabled = true;
+    msg.textContent = "Đang lưu...";
+    msg.className = "text-xs text-center min-h-[16px] text-sky-600";
+
+    if (currentRecordCount + students.length > 999) {
+      saveBtn.disabled = false;
+      msg.textContent = "Đã đạt giới hạn 999 bản ghi";
+      msg.className = "text-xs text-center min-h-[16px] text-rose-600";
+      return;
+    }
+
+    const week = parseInt($("week-select").value || "1", 10);
+    const className = $("class-input").value || "";
+    const teacherName = $("gvcn-input").value || "";
+
+    for (const s of students) {
+      const record = {
+        student_id: s.id,
+        student_name: s.name,
+        week,
+        class_name: className,
+        teacher_name: teacherName,
+        present_mon: s.attendance?.mon !== false,
+        present_tue: s.attendance?.tue !== false,
+        present_wed: s.attendance?.wed !== false,
+        present_thu: s.attendance?.thu !== false,
+        present_fri: s.attendance?.fri !== false,
+        score_mon: s.scores?.mon || 0,
+        score_tue: s.scores?.tue || 0,
+        score_wed: s.scores?.wed || 0,
+        score_thu: s.scores?.thu || 0,
+        score_fri: s.scores?.fri || 0,
+        created_at: new Date().toISOString()
+      };
+
+      const result = await window.dataSdk.create(record);
+      if (result.isError) {
+        msg.textContent = "Có lỗi khi lưu. Vui lòng thử lại";
+        msg.className = "text-xs text-center min-h-[16px] text-rose-600";
+        saveBtn.disabled = false;
+        return;
+      }
+    }
+
+    msg.textContent = "✅ Đã lưu vào Canva Sheet";
+    msg.className = "text-xs text-center min-h-[16px] text-emerald-600";
+    saveBtn.disabled = false;
+  }
+
+  $("btn-save-all").onclick = saveAllData;
+
+  // Data SDK init handler (existing behavior)
+  const dataHandler = {
+    onDataChanged(data) {
+      currentRecordCount = data.length;
+    }
+  };
+
+  async function initDataSdk() {
+    if (!window.dataSdk) return;
+    const result = await window.dataSdk.init(dataHandler);
+    if (result.isOk) {
+      dataInitialized = true;
+    }
+  }
+
+  // Accessibility helpers for day headers (keyboard)
+  function initDayHeaders() {
+    document.querySelectorAll(".day-header").forEach((th) => {
+      th.addEventListener("click", () => {
+        currentDay = th.dataset.day;
+        document.querySelectorAll(".day-header").forEach(h => {
+          h.classList.remove("bg-sky-200/70", "font-semibold");
+        });
+        th.classList.add("bg-sky-200/70", "font-semibold");
+        refreshCurrentStudentLabels();
+        updateDailyStatusBox();
+        renderStudentTable();
+      });
+      th.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          th.click();
+        }
+      });
+    });
+  }
+
+  // Persistence (localStorage)
+  function loadLocalState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      students = obj.students || [];
+      plusReasons = obj.plusReasons || plusReasons;
+      minusReasons = obj.minusReasons || minusReasons;
+      selectedStudentId = obj.selectedStudentId || (students[0]?.id || null);
+      currentDay = obj.currentDay || currentDay;
+      const weekVal = obj.week || 1;
+      $('week-select').value = weekVal;
+      $('class-input').value = obj.className || '';
+      $('gvcn-input').value = obj.teacherName || '';
+    } catch (e) {
+      console.error('loadLocalState error', e);
+    }
+  }
+
+  function saveLocalState() {
+    try {
+      const obj = {
+        students,
+        plusReasons,
+        minusReasons,
+        selectedStudentId,
+        currentDay,
+        week: $('week-select')?.value || 1,
+        className: $('class-input')?.value || '',
+        teacherName: $('gvcn-input')?.value || ''
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    } catch (e) {
+      console.error('saveLocalState error', e);
+    }
+  }
+
+  function saveLocalStateDebounced() {
+    if (saveLocalDebounceTimer) clearTimeout(saveLocalDebounceTimer);
+    saveLocalDebounceTimer = setTimeout(() => {
+      saveLocalState();
+      saveLocalDebounceTimer = null;
+    }, 300);
+  }
+
+  // Export / Import bindings
+  $("btn-export").onclick = exportCSV;
+  $("btn-import").onclick = importFromTextarea;
+
+  // Wire up other buttons
+  $("btn-update-names").onclick = handleUpdateNames;
+  $("btn-clear-student").onclick = handleClearStudent;
+  $("search-input").addEventListener("input", handleSearch);
+  $("btn-search").onclick = handleSearch;
+
+  // Copy and Line send functions (unchanged logic, with safe behavior)
+  $("btn-send").onclick = async () => {
+    const s = students.find(st => st.id === selectedStudentId);
+    if (!s) {
+      showToast("Vui lòng chọn học sinh trước");
+      return;
+    }
+    
+    const parentMsg = $("parent-message").value.trim();
+    
+    if (!parentMsg) {
+      showToast("Vui lòng nhập nội dung gửi phụ huynh trước");
+      return;
+    }
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(parentMsg);
+        const box = $("send-preview");
+        box.textContent = parentMsg;
+        box.classList.remove("hidden");
+        showToast("✅ Đã copy nội dung gửi phụ huynh!");
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = parentMsg;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        
+        const box = $("send-preview");
+        box.textContent = parentMsg;
+        box.classList.remove("hidden");
+        showToast("✅ Đã copy nội dung gửi phụ huynh!");
+      }
+    } catch (err) {
+      const textarea = document.createElement("textarea");
+      textarea.value = parentMsg;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        
+        const box = $("send-preview");
+        box.textContent = parentMsg;
+        box.classList.remove("hidden");
+        showToast("✅ Đã copy nội dung gửi phụ huynh!");
+      } catch (e) {
+        document.body.removeChild(textarea);
+        showToast("❌ Không thể copy. Vui lòng thử lại");
+      }
+    }
+  };
+
+  $("btn-send-line").onclick = () => {
+    const s = students.find(st => st.id === selectedStudentId);
+    if (!s) {
+      showToast("Vui lòng chọn học sinh trước");
+      return;
+    }
+    
+    const dayLabel = getDayLabel(currentDay);
+    const praise = $("praise-day").value.trim();
+    const remind = $("remind-day").value.trim();
+    const general = $("general-comment").value.trim();
+    const parentMsg = $("parent-message").value.trim();
+
+    const text = "👨🏫 Gửi phụ huynh của: " + s.name + "\n" +
+      "📅 " + dayLabel + " - Tuần " + $("week-select").value + "\n\n" +
+      (praise ? "✅ Khen: " + praise + "\n" : "") +
+      (remind ? "⚠️ Nhắc nhở: " + remind + "\n" : "") +
+      (general ? "📝 Nhận xét chung: " + general + "\n\n" : "\n") +
+      (parentMsg ? "💌 Gửi PH: " + parentMsg + "\n\n" : "\n") +
+      "🔗 Xem chi tiết: https://trang-web-c-a-toi.my.canva.site/theo-doi-quan-li-hoc-sinh";
+
+    const lineUrl = "https://line.me/R/msg/text/?" + encodeURIComponent(text);
+    window.open(lineUrl, "_blank", "noopener,noreferrer");
+    showToast("✅ Đã mở Line để gửi tin nhắn!");
+  };
+
+  // Map config / ui (unchanged)
+  async function onConfigChange(config) {
+    const cfg = config || defaultConfig;
+
+    $("main-title").textContent = cfg.main_title || defaultConfig.main_title;
+    $("school-name").textContent = cfg.school_name || defaultConfig.school_name;
+    $("student-block-title").textContent = cfg.student_block_title || defaultConfig.student_block_title;
+    $("daily-feedback-title").textContent = cfg.daily_feedback_title || defaultConfig.daily_feedback_title;
+    $("send-button-text").textContent = cfg.send_button_text || defaultConfig.send_button_text;
+
+    const bgColor = cfg.background_color || defaultConfig.background_color;
+    const surfaceColor = cfg.surface_color || defaultConfig.surface_color;
+    const textColor = cfg.text_color || defaultConfig.text_color;
+    const primaryColor = cfg.primary_action_color || defaultConfig.primary_action_color;
+    const secondaryColor = cfg.secondary_action_color || defaultConfig.secondary_action_color;
+
+    const appRoot = $("app-root");
+    appRoot.style.backgroundColor = bgColor;
+    appRoot.style.color = textColor;
+
+    document.querySelectorAll("section.bg-white, .bg-white").forEach((el) => {
+      el.style.backgroundColor = surfaceColor;
+    });
+
+    const primaryBtns = [$("btn-save-all"), $("btn-update-names")];
+    primaryBtns.forEach((btn) => {
+      if (btn) {
+        btn.style.backgroundColor = primaryColor;
+        btn.style.borderColor = primaryColor;
+      }
+    });
+
+    const secondaryBtns = [$("btn-send"), $("btn-send-line")];
+    secondaryBtns.forEach((btn) => {
+      if (btn) {
+        btn.style.backgroundColor = secondaryColor;
+        btn.style.borderColor = secondaryColor;
+      }
+    });
+
+    const baseFont = cfg.font_family || defaultConfig.font_family;
+    const baseSize = cfg.font_size || defaultConfig.font_size;
+
+    document.body.style.fontFamily = baseFont + ", 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+    document.body.style.fontSize = baseSize + "px";
+
+    $("main-title").style.fontSize = (baseSize * 1.6) + "px";
+    $("school-name").style.fontSize = (baseSize * 1.0) + "px";
+    
+    document.querySelectorAll("h3").forEach(h3 => {
+      h3.style.fontSize = (baseSize * 1.2) + "px";
+    });
+  }
+
+  function mapToCapabilities(config) {
+    const cfg = config || defaultConfig;
+    return {
+      recolorables: [
+        {
+          get: () => cfg.background_color || defaultConfig.background_color,
+          set: (value) => {
+            cfg.background_color = value;
+            if (window.elementSdk) window.elementSdk.setConfig({background_color: value});
+          }
+        },
+        {
+          get: () => cfg.surface_color || defaultConfig.surface_color,
+          set: (value) => {
+            cfg.surface_color = value;
+            if (window.elementSdk) window.elementSdk.setConfig({surface_color: value});
+          }
+        },
+        {
+          get: () => cfg.text_color || defaultConfig.text_color,
+          set: (value) => {
+            cfg.text_color = value;
+            if (window.elementSdk) window.elementSdk.setConfig({text_color: value});
+          }
+        },
+        {
+          get: () => cfg.primary_action_color || defaultConfig.primary_action_color,
+          set: (value) => {
+            cfg.primary_action_color = value;
+            if (window.elementSdk) window.elementSdk.setConfig({primary_action_color: value});
+          }
+        },
+        {
+          get: () => cfg.secondary_action_color || defaultConfig.secondary_action_color,
+          set: (value) => {
+            cfg.secondary_action_color = value;
+            if (window.elementSdk) window.elementSdk.setConfig({secondary_action_color: value});
+          }
+        }
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => cfg.font_family || defaultConfig.font_family,
+        set: (value) => {
+          cfg.font_family = value;
+          if (window.elementSdk) window.elementSdk.setConfig({font_family: value});
+        }
+      },
+      fontSizeable: {
+        get: () => cfg.font_size || defaultConfig.font_size,
+        set: (value) => {
+          cfg.font_size = value;
+          if (window.elementSdk) window.elementSdk.setConfig({font_size: value});
+        }
+      }
+    };
+  }
+
+  function mapToEditPanelValues(config) {
+    const cfg = config || defaultConfig;
+    return new Map([
+      ["main_title", cfg.main_title || defaultConfig.main_title],
+      ["school_name", cfg.school_name || defaultConfig.school_name],
+      ["student_block_title", cfg.student_block_title || defaultConfig.student_block_title],
+      ["reason_plus_title", cfg.reason_plus_title || defaultConfig.reason_plus_title],
+      ["reason_minus_title", cfg.reason_minus_title || defaultConfig.reason_minus_title],
+      ["daily_feedback_title", cfg.daily_feedback_title || defaultConfig.daily_feedback_title],
+      ["send_button_text", cfg.send_button_text || defaultConfig.send_button_text]
+    ]);
+  }
+
+  function initElementSdk() {
+    if (!window.elementSdk) return;
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange,
+      mapToCapabilities,
+      mapToEditPanelValues
+    });
+  }
+
+  // Initialization sequence
+  initWeekSelect();
+  initDayHeaders();
+  loadLocalState();
+  refreshCurrentStudentLabels();
+  updateDailyStatusBox();
+  renderStudentTable();
+  initElementSdk();
+  initDataSdk();
+
+  // Ensure UI saves state when relevant inputs change
+  $('week-select').addEventListener('change', saveLocalStateDebounced);
+  $('class-input').addEventListener('input', saveLocalStateDebounced);
+  $('gvcn-input').addEventListener('input', saveLocalStateDebounced);
+
+  // Save on unload
+  window.addEventListener('beforeunload', () => { saveLocalState(); });
+
+  </script>
+ </body>
+</html>
